@@ -3,12 +3,11 @@ set -e
 
 ENVIRONMENT=${1:-dev}          # dev | test | prod
 PROJECT_NAME=${2:-twin}
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "🚀 Deploying ${PROJECT_NAME} to ${ENVIRONMENT}..."
 
 # 1. Build Lambda package
-cd "$PROJECT_ROOT"
+cd "$(dirname "$0")/.."        # project root
 echo "📦 Building Lambda package..."
 (cd backend && uv run deploy.py)
 
@@ -43,7 +42,7 @@ FRONTEND_BUCKET=$(terraform output -raw s3_frontend_bucket)
 CUSTOM_URL=$(terraform output -raw custom_domain_url 2>/dev/null || true)
 
 # 3. Build + deploy frontend
-cd "$PROJECT_ROOT/frontend"
+cd "$(dirname "$0")/../../frontend"
 
 # Create production environment file with API URL
 echo "📝 Setting API URL for production..."
@@ -52,10 +51,11 @@ echo "NEXT_PUBLIC_API_URL=$API_URL" > .env.production
 npm install
 npm run build
 aws s3 sync ./out "s3://$FRONTEND_BUCKET/" --delete
+cd ..
 
 # 4. Final messages
 echo -e "\n✅ Deployment complete!"
-echo "🌐 CloudFront URL : $(terraform -chdir=$PROJECT_ROOT/backend/terraform output -raw cloudfront_url)"
+echo "🌐 CloudFront URL : $(terraform -chdir=backend/terraform output -raw cloudfront_url)"
 if [ -n "$CUSTOM_URL" ]; then
   echo "🔗 Custom domain  : $CUSTOM_URL"
 fi

@@ -72,7 +72,7 @@ jobs:
           
       - name: Get Deployment URLs
         id: deploy_outputs
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: |
           terraform workspace select ${{ github.event.inputs.environment || 'dev' }}
           echo "cloudfront_url=$(terraform output -raw cloudfront_url)" >> $GITHUB_OUTPUT
