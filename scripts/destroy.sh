@@ -16,7 +16,7 @@ PROJECT_NAME=${2:-twin}
 echo "🗑️ Preparing to destroy ${PROJECT_NAME}-${ENVIRONMENT} infrastructure..."
 
 # Navigate to terraform directory
-cd "$(dirname "$0")/../terraform"
+cd ../../terraform
 
 # Get AWS Account ID and Region for backend configuration
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
