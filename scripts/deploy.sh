@@ -42,7 +42,7 @@ FRONTEND_BUCKET=$(terraform output -raw s3_frontend_bucket)
 CUSTOM_URL=$(terraform output -raw custom_domain_url 2>/dev/null || true)
 
 # 3. Build + deploy frontend
-cd "$(dirname "$0")/../frontend"
+cd "$(dirname "$0")/../../frontend"
 
 # Create production environment file with API URL
 echo "📝 Setting API URL for production..."
