@@ -55,7 +55,7 @@ cd ..
 
 # 4. Final messages
 echo -e "\n✅ Deployment complete!"
-echo "🌐 CloudFront URL : $(terraform -chdir=backend/terraform output -raw cloudfront_url)"
+echo "🌐  CloudFront URL : $(terraform -chdir=backend/terraform output -raw cloudfront_url)"
 if [ -n "$CUSTOM_URL" ]; then
   echo "🔗 Custom domain  : $CUSTOM_URL"
 fi
