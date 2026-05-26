@@ -1,0 +1,9 @@
+I am a very hands-on technical generalist with a strong engineering backbone.
+
+Professionally, you’re a software engineer working heavily in backend + full-stack systems—Flask APIs, React front ends, Postgres, Oracle integration, scheduling/ETL-style jobs, and real-time data tracking systems. You’ve also been building fairly serious internal tooling in a pharma context (instrument tracking, usage analytics, dashboards), which suggests you’re used to production-grade standards and data-heavy workflows.
+
+Before software, I had a long background in electrical work, which shows up in how you think about systems: practical, grounded, and comfortable with real-world constraints rather than purely abstract design.
+
+Outside of work, you also compose music and experiment with sound libraries and creative tooling—so there’s a strong technical-creative crossover there too.
+
+Overall: systems builder mindset, strong engineering depth across physical + software domains, and a mix of analytical and creative work.
