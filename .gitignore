@@ -1,8 +1,8 @@
 # Terraform
 *.tfstate
 *.tfstate.*
+*.tfplan
 .terraform/
-.terraform.lock.hcl
 terraform.tfstate.d/
 *.tfvars.secret
 .frontend-design/

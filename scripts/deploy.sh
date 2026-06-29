@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -Eeuo pipefail
 
 ENVIRONMENT=${1:-dev}          # dev | test | prod
 PROJECT_NAME=${2:-twin}
@@ -13,25 +13,20 @@ echo "📦 Building Lambda package..."
 
 # 2. Terraform workspace & apply
 cd backend/terraform
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 AWS_REGION=${DEFAULT_AWS_REGION:-us-east-1}
-terraform init -input=false \
-  -backend-config="bucket=twin-terraform-state-${AWS_ACCOUNT_ID}" \
-  -backend-config="key=${ENVIRONMENT}/terraform.tfstate" \
+TERRAFORM_STATE_BUCKET=${TERRAFORM_STATE_BUCKET:-jeremy-terraform-state-574852786640}
+terraform init -reconfigure -input=false \
+  -backend-config="bucket=${TERRAFORM_STATE_BUCKET}" \
+  -backend-config="key=digital-twin/${ENVIRONMENT}/terraform.tfstate" \
   -backend-config="region=${AWS_REGION}" \
-  -backend-config="dynamodb_table=twin-terraform-locks" \
-  -backend-config="encrypt=true"
-if ! terraform workspace list | grep -q "$ENVIRONMENT"; then
-  terraform workspace new "$ENVIRONMENT"
-else
-  terraform workspace select "$ENVIRONMENT"
-fi
+  -backend-config="encrypt=true" \
+  -backend-config="use_lockfile=true"
 
 # Use prod.tfvars for production environment
 if [ "$ENVIRONMENT" = "prod" ]; then
-  TF_APPLY_CMD=(terraform apply -var-file=prod.tfvars -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve)
+  TF_APPLY_CMD=(terraform apply -var-file=prod.tfvars -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT")
 else
-  TF_APPLY_CMD=(terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve)
+  TF_APPLY_CMD=(terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT")
 fi
 
 echo "🎯 Applying Terraform..."
@@ -39,6 +34,7 @@ echo "🎯 Applying Terraform..."
 
 API_URL=$(terraform output -raw api_gateway_url)
 FRONTEND_BUCKET=$(terraform output -raw s3_frontend_bucket)
+CLOUDFRONT_DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
 CUSTOM_URL=$(terraform output -raw custom_domain_url 2>/dev/null || true)
 
 # 3. Build + deploy frontend
@@ -46,11 +42,12 @@ cd ../../frontend
 
 # Create production environment file with API URL
 echo "📝 Setting API URL for production..."
-echo "NEXT_PUBLIC_API_URL=$API_URL" > .env.production
+printf 'NEXT_PUBLIC_API_URL=%s\n' "$API_URL" > .env.production
 
-npm install
+npm ci
 npm run build
 aws s3 sync ./out "s3://$FRONTEND_BUCKET/" --delete
+aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths '/*' >/dev/null
 cd ..
 
 # 4. Final messages

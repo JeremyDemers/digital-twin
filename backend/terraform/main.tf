@@ -1,5 +1,7 @@
 # Data source to get current AWS account ID
 data "aws_caller_identity" "current" {}
+data "aws_partition" "current" {}
+data "aws_region" "current" {}
 
 variable "acm_certificate_arn" {
   description = "Existing ACM certificate ARN in us-east-1. When set, Terraform skips requesting and validating a new certificate."
@@ -19,6 +21,14 @@ locals {
   ] : []
 
   name_prefix = "${var.project_name}-${var.environment}"
+
+  site_origins = local.custom_domain_enabled ? [
+    "https://${var.root_domain}",
+    "https://www.${var.root_domain}",
+  ] : ["https://${aws_cloudfront_distribution.main.domain_name}"]
+
+  allowed_origins     = distinct(concat(local.site_origins, var.additional_allowed_origins))
+  bedrock_profile_arn = "arn:${data.aws_partition.current.partition}:bedrock:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}"
 
   common_tags = {
     Project     = var.project_name
@@ -50,7 +60,32 @@ resource "aws_s3_bucket_ownership_controls" "memory" {
   }
 }
 
-# S3 bucket for frontend static website
+resource "aws_s3_bucket_server_side_encryption_configuration" "memory" {
+  bucket = aws_s3_bucket.memory.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "memory" {
+  bucket = aws_s3_bucket.memory.id
+
+  rule {
+    id     = "expire-conversations"
+    status = "Enabled"
+
+    filter {}
+
+    expiration {
+      days = var.conversation_retention_days
+    }
+  }
+}
+
+# S3 bucket for the private static frontend origin
 resource "aws_s3_bucket" "frontend" {
   bucket = "${local.name_prefix}-frontend-${data.aws_caller_identity.current.account_id}"
   tags   = local.common_tags
@@ -59,41 +94,36 @@ resource "aws_s3_bucket" "frontend" {
 resource "aws_s3_bucket_public_access_block" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_website_configuration" "frontend" {
+resource "aws_s3_bucket_ownership_controls" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "404.html"
+  rule {
+    object_ownership = "BucketOwnerEnforced"
   }
 }
 
-resource "aws_s3_bucket_policy" "frontend" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.frontend.arn}/*"
-      },
-    ]
-  })
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
 
-  depends_on = [aws_s3_bucket_public_access_block.frontend]
+resource "aws_cloudfront_origin_access_control" "frontend" {
+  name                              = "${local.name_prefix}-frontend-oac"
+  description                       = "Private access to the Digital Twin frontend bucket"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
 
 # IAM role for Lambda
@@ -120,31 +150,57 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_bedrock" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonBedrockFullAccess"
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy" "lambda_app" {
+  name = "${local.name_prefix}-lambda-app-policy"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "UseConversationMemory"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+        ]
+        Resource = "${aws_s3_bucket.memory.arn}/*"
+      },
+      {
+        Sid    = "InvokeNova"
+        Effect = "Allow"
+        Action = "bedrock:InvokeModel"
+        Resource = [
+          local.bedrock_profile_arn,
+          "arn:${data.aws_partition.current.partition}:bedrock:*::foundation-model/amazon.nova-*",
+        ]
+      },
+    ]
+  })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_s3" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-  role       = aws_iam_role.lambda_role.name
+resource "aws_cloudwatch_log_group" "api" {
+  name              = "/aws/lambda/${local.name_prefix}-api"
+  retention_in_days = 14
 }
 
 # Lambda function
 resource "aws_lambda_function" "api" {
-  filename         = "${path.module}/../lambda-deployment.zip"
-  function_name    = "${local.name_prefix}-api"
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "lambda_handler.handler"
-  source_code_hash = filebase64sha256("${path.module}/../lambda-deployment.zip")
-  runtime          = "python3.14"
-  architectures    = ["x86_64"]
-  timeout          = var.lambda_timeout
-  tags             = local.common_tags
+  filename                       = "${path.module}/../lambda-deployment.zip"
+  function_name                  = "${local.name_prefix}-api"
+  role                           = aws_iam_role.lambda_role.arn
+  handler                        = "lambda_handler.handler"
+  source_code_hash               = filebase64sha256("${path.module}/../lambda-deployment.zip")
+  runtime                        = "python3.14"
+  architectures                  = ["x86_64"]
+  memory_size                    = 512
+  timeout                        = var.lambda_timeout
+  reserved_concurrent_executions = 5
+  tags                           = local.common_tags
 
   environment {
     variables = {
-      CORS_ORIGINS     = var.use_custom_domain ? "https://${var.root_domain},https://www.${var.root_domain}" : "https://${aws_cloudfront_distribution.main.domain_name}"
+      CORS_ORIGINS     = join(",", local.allowed_origins)
       S3_BUCKET        = aws_s3_bucket.memory.id
       USE_S3           = "true"
       BEDROCK_MODEL_ID = var.bedrock_model_id
@@ -152,7 +208,11 @@ resource "aws_lambda_function" "api" {
   }
 
   # Ensure Lambda waits for the distribution to exist
-  depends_on = [aws_cloudfront_distribution.main]
+  depends_on = [
+    aws_cloudfront_distribution.main,
+    aws_cloudwatch_log_group.api,
+    aws_iam_role_policy.lambda_app,
+  ]
 }
 
 # API Gateway HTTP API
@@ -163,9 +223,9 @@ resource "aws_apigatewayv2_api" "main" {
 
   cors_configuration {
     allow_credentials = false
-    allow_headers     = ["*"]
+    allow_headers     = ["Content-Type"]
     allow_methods     = ["GET", "POST", "OPTIONS"]
-    allow_origins     = ["*"]
+    allow_origins     = local.allowed_origins
     max_age           = 300
   }
 }
@@ -183,9 +243,10 @@ resource "aws_apigatewayv2_stage" "default" {
 }
 
 resource "aws_apigatewayv2_integration" "lambda" {
-  api_id           = aws_apigatewayv2_api.main.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.api.invoke_arn
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.api.invoke_arn
+  payload_format_version = "2.0"
 }
 
 # API Gateway Routes
@@ -204,6 +265,12 @@ resource "aws_apigatewayv2_route" "post_chat" {
 resource "aws_apigatewayv2_route" "get_health" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "GET /health"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "get_conversation" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "GET /conversation/{session_id}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
@@ -228,26 +295,26 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   origin {
-    domain_name = aws_s3_bucket_website_configuration.frontend.website_endpoint
-    origin_id   = "S3-${aws_s3_bucket.frontend.id}"
+    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
+    origin_id                = "S3-${aws_s3_bucket.frontend.id}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
 
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
+    s3_origin_config {
+      origin_access_identity = ""
     }
   }
 
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
+  price_class         = "PriceClass_100"
   tags                = local.common_tags
 
   default_cache_behavior {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = "S3-${aws_s3_bucket.frontend.id}"
+    compress         = true
 
     forwarded_values {
       query_string = false
@@ -269,10 +336,40 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   custom_error_response {
-    error_code         = 404
-    response_code      = 200
-    response_page_path = "/index.html"
+    error_code         = 403
+    response_code      = 404
+    response_page_path = "/404.html"
   }
+
+  custom_error_response {
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/404.html"
+  }
+}
+
+data "aws_iam_policy_document" "frontend" {
+  statement {
+    sid       = "AllowCloudFrontRead"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.frontend.arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.main.arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+  policy = data.aws_iam_policy_document.frontend.json
 }
 
 # Optional: Custom domain configuration (only created when use_custom_domain = true)
