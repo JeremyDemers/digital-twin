@@ -167,6 +167,17 @@ resource "aws_iam_role_policy" "lambda_app" {
         Resource = "${aws_s3_bucket.memory.arn}/*"
       },
       {
+        Sid      = "CheckConversationMemory"
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = aws_s3_bucket.memory.arn
+        Condition = {
+          StringLike = {
+            "s3:prefix" = "*.json"
+          }
+        }
+      },
+      {
         Sid    = "InvokeNova"
         Effect = "Allow"
         Action = "bedrock:InvokeModel"
@@ -294,13 +305,11 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   origin {
-    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_id                = "S3-${aws_s3_bucket.frontend.id}"
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
+    domain_name                 = aws_s3_bucket.frontend.bucket_regional_domain_name
+    origin_id                   = "S3-${aws_s3_bucket.frontend.id}"
+    origin_access_control_id    = aws_cloudfront_origin_access_control.frontend.id
+    response_completion_timeout = 0
 
-    s3_origin_config {
-      origin_access_identity = ""
-    }
   }
 
   enabled             = true
