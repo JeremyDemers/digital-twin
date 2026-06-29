@@ -1,9 +1,13 @@
-from pypdf import PdfReader
 import json
+from pathlib import Path
+
+from pypdf import PdfReader
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 # Read LinkedIn PDF
 try:
-    reader = PdfReader("./data/linkedin.pdf")
+    reader = PdfReader(DATA_DIR / "LinkedIn.pdf")
     linkedin = ""
     for page in reader.pages:
         text = page.extract_text()
@@ -13,11 +17,11 @@ except FileNotFoundError:
     linkedin = "LinkedIn profile not available"
 
 # Read other data files
-with open("./data/summary.txt", "r", encoding="utf-8") as f:
+with open(DATA_DIR / "summary.txt", "r", encoding="utf-8") as f:
     summary = f.read()
 
-with open("./data/style.txt", "r", encoding="utf-8") as f:
+with open(DATA_DIR / "style.txt", "r", encoding="utf-8") as f:
     style = f.read()
 
-with open("./data/facts.json", "r", encoding="utf-8") as f:
+with open(DATA_DIR / "facts.json", "r", encoding="utf-8") as f:
     facts = json.load(f)

@@ -3,37 +3,30 @@
     "name": "Jeremy",
     "current_role": "Software Engineer",
     "location": "Providence, RI",
-    "email": "JeremysDemers@gmail.com",
+    "email": "JeremySD99@gmail.com",
     "linkedin": "https://www.linkedin.com/in/jeremy-demers/",
     "specialties": [
       "Software Engineering",
+      "Front-End Development",
       "Full-Stack Development",
       "AI",
       "Machine Learning",
-      "Data Science",
       "Data Engineering",
       "Data Analysis",
       "Data Visualization",
-      "Data Architecture",
-      "Data Modeling",
-      "Data Warehousing"
+      "Data Architecture"
     ],
     "years_experience": 20, 
     "education": [
       {
-        "degree": "Bachelor of Science in Computer Science",
-        "institution": "University of California, Berkeley",
-        "year": "2004"
+        "degree": "Bachelor of Science in Computer Information Systems",
+        "institution": "New England Institute of Technology",
+        "year": "2000"
       },
       {
-        "degree": "Master of Science in Computer Science",
-        "institution": "Stanford University",
-        "year": "2008"
-      },
-      {
-        "degree": "Doctor of Philosophy in Computer Science",
-        "institution": "Harvard University",
-        "year": "2012"
+        "certificate": "Chemical and Bio Process Technology",
+        "institution": "Community College of Rhode Island",
+        "year": "2019"
       }
     ]
   }
