@@ -14,15 +14,16 @@ flowchart LR
     end
 
     subgraph delivery["Frontend delivery"]
-        cloudfront["CloudFront distribution<br/>HTTPS and SPA fallback"]
-        frontend["S3 frontend bucket<br/>Public static website"]
+        cloudfront["CloudFront distribution<br/>HTTPS and compressed delivery"]
+        oac["Origin Access Control<br/>SigV4 requests"]
+        frontend["Private S3 frontend bucket<br/>Static export"]
     end
 
     subgraph api["Chat API"]
-        gateway["API Gateway HTTP API<br/>GET /, GET /health, POST /chat"]
+        gateway["API Gateway HTTP API<br/>Health, chat, and conversation routes"]
         lambda["Python 3.14 Lambda<br/>Mangum / FastAPI handler"]
         role["Lambda IAM role"]
-        policies["Managed policies<br/>Basic execution, Bedrock, S3"]
+        policies["Least-privilege policies<br/>Logs, Bedrock, memory objects"]
     end
 
     subgraph services["Data and AI services"]
@@ -40,7 +41,8 @@ flowchart LR
     route53 -->|"Alias"| cloudfront
     acm -.->|"TLS certificate"| cloudfront
     validation -.->|"Validates"| acm
-    cloudfront -->|"HTTP website origin"| frontend
+    cloudfront -->|"Signed HTTPS request"| oac
+    oac -->|"GetObject"| frontend
     frontend -.->|"Loads static application"| visitor
 
     visitor -->|"HTTPS API request"| gateway
@@ -62,13 +64,13 @@ flowchart LR
     classDef compute fill:#e8f0fe,stroke:#3367d6,color:#15336b;
     class route53,acm,validation optional;
     class frontend,memory,stateBucket storage;
-    class cloudfront,gateway,lambda,bedrock compute;
+    class cloudfront,oac,gateway,lambda,bedrock compute;
 ```
 
 ## Architecture notes
 
-- CloudFront serves only the exported frontend from the S3 website endpoint. API requests go from the browser to the separate API Gateway URL.
+- CloudFront serves the exported frontend from a private S3 REST origin. Origin Access Control signs requests, so the bucket is not publicly readable. API requests go from the browser to the separate API Gateway URL.
 - The custom domain, Route 53 aliases, and ACM certificate resources are created only when `use_custom_domain` is enabled. Terraform can either create the certificate or use an existing ARN.
-- Lambda stores conversation history in the private memory bucket and calls the configured Bedrock model.
-- The Lambda role receives AWS-managed permissions for logging, Bedrock, and S3 access.
+- Lambda stores conversation history in the encrypted private memory bucket, where objects expire after the configured retention period, and calls the configured Bedrock model.
+- The Lambda role uses the AWS-managed basic execution policy for logs plus a narrow inline policy for conversation objects and the selected Bedrock model.
 - The Terraform S3 backend bucket is supplied during `terraform init`; this configuration does not provision that bucket.

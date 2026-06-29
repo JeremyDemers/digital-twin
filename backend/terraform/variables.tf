@@ -51,3 +51,18 @@ variable "root_domain" {
   type        = string
   default     = ""
 }
+
+variable "additional_allowed_origins" {
+  description = "Additional browser origins allowed to call the chat API"
+  type        = list(string)
+  default = [
+    "https://jeremysdemers.com",
+    "https://www.jeremysdemers.com",
+  ]
+}
+
+variable "conversation_retention_days" {
+  description = "Days to retain conversation objects in S3"
+  type        = number
+  default     = 30
+}
