@@ -1,9 +1,33 @@
-I am a very hands-on technical generalist with a strong engineering backbone.
+About Me
 
-Professionally, you’re a software engineer working heavily in backend + full-stack systems—Flask APIs, React front ends, Postgres, Oracle integration, scheduling/ETL-style jobs, and real-time data tracking systems. You’ve also been building fairly serious internal tooling in a pharma context (instrument tracking, usage analytics, dashboards), which suggests you’re used to production-grade standards and data-heavy workflows.
+My name is Jeremy Demers. I am a technically versatile full-stack software developer with a strong mix of enterprise application development, automation, AI engineering, and real-world process experience. I have worked on full-stack web applications, internal data systems, workflow automation, database-backed dashboards, and AI-powered tools, with a practical focus on building systems that are useful, maintainable, and production-ready.
+My primary technical strengths include frontend and backend development, React, NextJS, Flask, Python, Django, PostgreSQL, Oracle integrations, Waters Empower 3 APIs and Database, Docker, AWS application deployment with Terraform, GitHub CI/CD, APIs, data visualization, scheduled jobs, reporting workflows, and enterprise-style application architecture. I have built and maintained systems that connect to scientific and operational data sources, including dashboards for instrument usage, usage summaries, scientist activity, charting, reporting, exports, and automation around recurring data collection.
+I have also been actively expanding into modern AI engineering. I completed a production-focused AI engineering course covering generative AI, agentic AI applications, LLM-powered SaaS apps, RAG, MCP-based agents, multi-agent workflows, cloud-native AI architecture, serverless infrastructure, Terraform, GitHub Actions, observability, security controls, guardrails, and cost management. My hands-on exposure includes deployments across Vercel, AWS, Azure, and GCP, with deeper work in AWS services such as Bedrock, SageMaker, Lambda, API Gateway, S3, CloudFront, SQS, and Aurora Serverless.
+Beyond traditional software engineering, I have experience with AI, CNNs, DNNs, image models, and practical machine learning workflows. I have fine-tuned and trained convolutional neural networks for targeted problems and have experimented with local generative AI models, image captioning, diffusion models, and GPU-based workflows. I approach AI from a builder’s perspective: not just learning the concepts, but turning them into usable applications.
+My background also includes training and education in chemical operations, process control, Lean 5S practices, biomanufacturing, control room simulation, biotech techniques, micropipetting, cell incubation, cGMP, FDA-regulated environments, and mechanical/electrical fundamentals. That gives me a valuable bridge between software, scientific operations, regulated industries, and real-world process discipline.
+Professionally, I am focused on continuing to grow into a stronger senior-level engineer. I am interested in modern employer expectations, senior engineering skill stacks, portfolio projects, GitHub repo structure, production-grade architecture, security clearance, and AI-assisted full-stack development. I value professional-quality work, especially the kind of engineering standards expected in large enterprise environments.
+Overall, I am a highly motivated technical generalist with strong full-stack development ability, growing AI engineering depth, enterprise data-system experience, regulated-industry awareness, and a practical, builder-oriented mindset. I learn by doing, value professional-grade solutions, and am actively positioning myself for more advanced software engineering and AI-focused opportunities.
+Projects
 
-Before software, I had a long background in electrical work, which shows up in how you think about systems: practical, grounded, and comfortable with real-world constraints rather than purely abstract design.
+SmartLab Empower API is a lightweight, containerized ASP.NET Core API designed to retrieve analytical data from the Oracle Empower 3 chromatography data system. Built with .NET 8, it provides a modern, structured interface for accessing Empower data programmatically—ideal for labs, LIMS integrations, and automated reporting workflows.
+The API exposes multiple endpoints for retrieving Empower results by:
+Sample set & result set pairs
+Time‑range queries
+Sample name & year
+Result ID lookups
+It supports local development via the .NET CLI and production deployment through Docker, making it easy to run in SmartLab environments or on any container‑ready infrastructure. Swagger documentation is included for quick testing and validation.
+Tech Stack: C#, ASP.NET Core, Oracle.ManagedDataAccess.Core, Docker
+Purpose: Streamline and modernize access to Empower 3 data for lab automation and SmartLab integrations.
 
-Outside of work, you also compose music and experiment with sound libraries and creative tooling—so there’s a strong technical-creative crossover there too.
 
-Overall: systems builder mindset, strong engineering depth across physical + software domains, and a mix of analytical and creative work.
+LLE Analysis
+I developed LLE Analysis, an automated computer-vision system for analyzing liquid-liquid extraction samples.
+At its core is a custom YOLOv8 convolutional neural network that I trained using more than 2,000 images I manually annotated. As a laboratory robot moves each vial from a plate into the camera’s view, the model identifies key vial features and marks them with labeled bounding boxes.
+The application then analyzes these detections to determine liquid-layer positions and volumes, meniscus types, rag layers, residue, measurements, and sample viability. Once the run is complete, it automatically generates a detailed Excel report containing the results and annotated images, then emails it directly to the scientist.
+Technologies: Python, YOLOv8 CNN (convolutional neural network), PyTorch, OpenCV, Flask, Socket.IO, Pandas, OpenPyXL, and SQLite.
+
+
+Disso Dissolution Platform
+I designed and developed Disso, a full-stack web application that centralizes pharmaceutical dissolution study workflows and data. The platform enables scientists to create, duplicate, edit, review, approve, and securely lock study records while capturing detailed sample, method, media, instrumentation, and analytical parameters.
+Disso also processes reports from Distek, ChemStation, Agilent, and ALMAC systems, transforming instrument output into structured data and Excel reports for analysis and visualization. The application reduces manual data entry and improves the consistency, traceability, and accessibility of laboratory study information.
+Technologies: Python, Django, PostgreSQL, Pandas, SQLAlchemy, JavaScript, and Bootstrap

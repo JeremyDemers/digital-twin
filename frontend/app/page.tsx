@@ -1,26 +1,50 @@
+import Image from 'next/image';
+import { ArrowUpRight } from 'lucide-react';
 import Twin from '@/components/twin';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
-            AI in Production
-          </h1>
-          <p className="text-center text-gray-600 mb-8">
-            Deploy your Digital Twin to the cloud
-          </p>
+    <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to conversation
+      </a>
 
-          <div className="h-[600px]">
-            <Twin />
-          </div>
+      <header className="site-header">
+        <a className="brand" href="#main-content" aria-label="Jeremy Demers digital twin home">
+          <span className="brand-avatar" aria-hidden="true">
+            <Image src="/profile_round_sm.png" alt="" width={96} height={96} priority />
+          </span>
+          <span className="brand-copy">
+            <strong>Jeremy Demers</strong>
+            <span>Digital twin</span>
+          </span>
+        </a>
 
-          <footer className="mt-8 text-center text-sm text-gray-500">
-            <p>Week 2: Building Your Digital Twin</p>
-          </footer>
+        <div className="header-actions">
+          <span className="availability">
+            <span aria-hidden="true" />
+            Ready to chat
+          </span>
+          <a
+            className="linkedin-link"
+            href="https://www.linkedin.com/in/jeremy-demers/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Connect with Jeremy Demers on LinkedIn"
+          >
+            <span className="linkedin-mark" aria-hidden="true">
+              in
+            </span>
+            <span className="linkedin-label">LinkedIn</span>
+            <ArrowUpRight className="external-icon" aria-hidden="true" />
+          </a>
         </div>
-      </div>
-    </main>
+      </header>
+
+      <main id="main-content" className="chat-main" tabIndex={-1}>
+        <h1 className="sr-only">Chat with Jeremy Demers&apos; digital twin</h1>
+        <Twin />
+      </main>
+    </div>
   );
 }
