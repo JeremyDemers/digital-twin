@@ -15,7 +15,7 @@ This project is an interactive digital twin of Jeremy Demers. Visitors can ask a
 - **Production-focused interface** — responsive design, dark and light themes, accessible controls, suggested prompts, and Markdown responses.
 - **Interactive architecture viewer** — lazy-loads a Mermaid diagram so visitors can inspect the AWS system without increasing the initial bundle.
 - **Serverless AWS deployment** — uses Lambda, API Gateway, Bedrock, S3, CloudFront, IAM, and optional Route 53/ACM resources.
-- **Infrastructure as code** — provisions repeatable `dev`, `test`, and `prod` environments with Terraform workspaces.
+- **Infrastructure as code** — provisions repeatable environments with Terraform and isolated remote-state keys.
 
 ## Tech Stack
 
@@ -128,24 +128,19 @@ Pass the returned `session_id` with later messages to continue the same conversa
 
 The deployment script packages the Python application for Lambda, applies the Terraform configuration, exports the frontend, syncs it to S3, and reports the resulting CloudFront and API Gateway URLs.
 
-Before deploying, install and authenticate the AWS CLI, install Terraform and Docker, enable access to the selected Bedrock model, and provision the S3 state bucket and DynamoDB lock table referenced by `scripts/deploy.sh`.
+Before deploying infrastructure locally, install and authenticate the AWS CLI, install Terraform and `uv`, enable access to the selected Bedrock model, and provision the encrypted, versioned S3 state bucket referenced by `scripts/deploy.sh`.
 
-Generate the Lambda requirements file from the locked Python project, then deploy:
+Then deploy and approve the Terraform plan:
 
 ```bash
-cd backend
-uv export --no-dev --format requirements-txt --output-file requirements.txt
-cd ..
 ./scripts/deploy.sh prod digital-twin
 ```
 
 Production settings, including the optional custom domain, live in `backend/terraform/prod.tfvars`. Review the Terraform plan and expected AWS costs before applying infrastructure.
 
-To remove an environment and its stored data:
+Application code deploys automatically after merged changes reach `main`. GitHub Actions uses short-lived OIDC credentials scoped to `twin-prod-api`, the frontend bucket, and its CloudFront distribution. It cannot modify Terraform infrastructure or conversation storage.
 
-```bash
-./scripts/destroy.sh prod digital-twin
-```
+Environment destruction is intentionally not exposed through GitHub Actions. Run a reviewed Terraform destroy locally only when removal and data loss are explicitly intended.
 
 ## Project Structure
 
@@ -158,7 +153,7 @@ digital-twin/
 ├── backend/                    # FastAPI application and twin context
 │   ├── data/                   # Curated facts, summary, style, and profile data
 │   └── terraform/              # AWS infrastructure and architecture docs
-├── scripts/                    # Deployment and teardown workflows
+├── scripts/                    # Local infrastructure deployment workflow
 └── .env.example               # Safe local configuration template
 ```
 
