@@ -22,12 +22,51 @@ Purpose: Streamline and modernize access to Empower 3 data for lab automation an
 
 LLE Analysis
 I developed LLE Analysis, an automated computer-vision system for analyzing liquid-liquid extraction samples.
-At its core is a custom YOLOv8 convolutional neural network that I trained using more than 2,000 images I manually annotated. As a laboratory robot moves each vial from a plate into the camera’s view, the model identifies key vial features and marks them with labeled bounding boxes.
+At its core is a custom YOLOv7 convolutional neural network that I trained using more than 2,000 images I manually annotated. As a laboratory robot moves each vial from a plate into the camera’s view, the model identifies key vial features and marks them with labeled bounding boxes.
 The application then analyzes these detections to determine liquid-layer positions and volumes, meniscus types, rag layers, residue, measurements, and sample viability. Once the run is complete, it automatically generates a detailed Excel report containing the results and annotated images, then emails it directly to the scientist.
-Technologies: Python, YOLOv8 CNN (convolutional neural network), PyTorch, OpenCV, Flask, Socket.IO, Pandas, OpenPyXL, and SQLite.
+Technologies: Python, YOLOv8, PyTorch, OpenCV, Flask, Socket.IO, Pandas, OpenPyXL, and SQLite.
 
 
 Disso Dissolution Platform
-I designed and developed Disso, a full-stack web application that centralizes pharmaceutical dissolution study workflows and data. The platform enables scientists to create, duplicate, edit, review, approve, and securely lock study records while capturing detailed sample, method, media, instrumentation, and analytical parameters.
+I designed and developed Disso, a full-stack web application that centralizes pharmaceutical dissolution study workflows and data. The platform enables scientists to create, duplicate, edit, review, approve, and securely lock study records while capturing detailed sample, method, media, instrumentation, and analytical parameters. It utilizes a 3D printer camera mount with a custom lighting system that snaps into the well plate area of the Cirius robot that I designed.
 Disso also processes reports from Distek, ChemStation, Agilent, and ALMAC systems, transforming instrument output into structured data and Excel reports for analysis and visualization. The application reduces manual data entry and improves the consistency, traceability, and accessibility of laboratory study information.
 Technologies: Python, Django, PostgreSQL, Pandas, SQLAlchemy, JavaScript, and Bootstrap
+
+
+Positioning Statement
+I build production-minded full-stack, automation, and AI systems for scientific, enterprise, and interactive software environments - with a practical focus on reliability, usability, clean architecture, and repeatable deployment.
+
+Core Technical Strengths
+Full-stack application development: React, Next.js, TypeScript, JavaScript, Django, Flask, FastAPI, ASP.NET Core, C#, Python, Bootstrap, Tailwind CSS
+Enterprise data systems and APIs: PostgreSQL, Oracle, SQLite, REST APIs, Swagger/OpenAPI, Waters Empower 3 APIs and database integrations, schema tracking, reporting workflows
+Cloud and DevOps: AWS Lambda, API Gateway, S3, CloudFront, DynamoDB, Bedrock, IAM, Route 53, ACM, Terraform, Docker, GitHub Actions, GitHub OIDC deployments
+AI and computer vision: PyTorch, OpenCV, YOLO/YOLOR-family object detection, CNNs, DNNs, image models, LLM-powered applications, Amazon Bedrock, local GPU workflows
+Laboratory automation and scientific workflows: Instrument data access, sample workflows, automated reports, Excel generation, annotated images, data validation, scheduled jobs, scientist-facing tools
+Product-minded engineering: Authentication, persistence, score/stat tracking, leaderboards, responsive UI, documentation, deployment scripts, quality checks, testable project structure
+
+Professional Background
+Organization
+Role
+Dates
+Pfizer
+Full Stack Web Developer and Process Automation
+Sept 2020 - Present
+Eurofins
+Full Stack Web Developer and Process Automation
+Apr 2019 - Sept 2020
+MEDITECH
+Lead Senior Software Development
+May 2000 - Aug 2015
+Independent Work
+Cloud, AI, and Automation Portfolio
+Nov 2025 - Present
+
+
+Education
+New England Institute of Technology: Associate Degree, Computer Science (2000)
+Community College of Rhode Island: Certificate, Chemical and Bioprocess Technology (2019)
+AI Engineering Training: Generative AI, RAG, Multi-agent workflows, Terraform, AWS, Azure, GCP
+
+
+
+
