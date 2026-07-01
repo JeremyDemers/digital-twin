@@ -7,6 +7,8 @@ Beyond traditional software engineering, I have experience with AI, CNNs, DNNs, 
 My background also includes training and education in chemical operations, process control, Lean 5S practices, biomanufacturing, control room simulation, biotech techniques, micropipetting, cell incubation, cGMP, FDA-regulated environments, and mechanical/electrical fundamentals. That gives me a valuable bridge between software, scientific operations, regulated industries, and real-world process discipline.
 Professionally, I am focused on continuing to grow into a stronger senior-level engineer. I am interested in modern employer expectations, senior engineering skill stacks, portfolio projects, GitHub repo structure, production-grade architecture, security clearance, and AI-assisted full-stack development. I value professional-quality work, especially the kind of engineering standards expected in large enterprise environments.
 Overall, I am a highly motivated technical generalist with strong full-stack development ability, growing AI engineering depth, enterprise data-system experience, regulated-industry awareness, and a practical, builder-oriented mindset. I learn by doing, value professional-grade solutions, and am actively positioning myself for more advanced software engineering and AI-focused opportunities.
+
+---
 Projects
 
 SmartLab Empower API is a lightweight, containerized ASP.NET Core API designed to retrieve analytical data from the Oracle Empower 3 chromatography data system. Built with .NET 8, it provides a modern, structured interface for accessing Empower data programmatically—ideal for labs, LIMS integrations, and automated reporting workflows.
@@ -18,20 +20,62 @@ Result ID lookups
 It supports local development via the .NET CLI and production deployment through Docker, making it easy to run in SmartLab environments or on any container‑ready infrastructure. Swagger documentation is included for quick testing and validation.
 Tech Stack: C#, ASP.NET Core, Oracle.ManagedDataAccess.Core, Docker
 Purpose: Streamline and modernize access to Empower 3 data for lab automation and SmartLab integrations.
-
+---
 
 LLE Analysis
 I developed LLE Analysis, an automated computer-vision system for analyzing liquid-liquid extraction samples.
 At its core is a custom YOLOv7 convolutional neural network that I trained using more than 2,000 images I manually annotated. As a laboratory robot moves each vial from a plate into the camera’s view, the model identifies key vial features and marks them with labeled bounding boxes.
 The application then analyzes these detections to determine liquid-layer positions and volumes, meniscus types, rag layers, residue, measurements, and sample viability. Once the run is complete, it automatically generates a detailed Excel report containing the results and annotated images, then emails it directly to the scientist.
 Technologies: Python, YOLOv8, PyTorch, OpenCV, Flask, Socket.IO, Pandas, OpenPyXL, and SQLite.
-
+---
 
 Disso Dissolution Platform
 I designed and developed Disso, a full-stack web application that centralizes pharmaceutical dissolution study workflows and data. The platform enables scientists to create, duplicate, edit, review, approve, and securely lock study records while capturing detailed sample, method, media, instrumentation, and analytical parameters. It utilizes a 3D printer camera mount with a custom lighting system that snaps into the well plate area of the Cirius robot that I designed.
 Disso also processes reports from Distek, ChemStation, Agilent, and ALMAC systems, transforming instrument output into structured data and Excel reports for analysis and visualization. The application reduces manual data entry and improves the consistency, traceability, and accessibility of laboratory study information.
 Technologies: Python, Django, PostgreSQL, Pandas, SQLAlchemy, JavaScript, and Bootstrap
+---
 
+Digital Twin
+his project is an interactive digital twin of Jeremy Demers. Visitors can ask about Jeremy's experience, projects, approach to AI, and working style through a responsive chat interface backed by Amazon Bedrock. The application combines a statically exported Next.js frontend with a serverless FastAPI backend and infrastructure managed entirely with Terraform.
+Highlights
+Context-aware conversation — grounds responses in curated professional facts, summaries, writing style, and LinkedIn history.
+Persistent sessions — keeps conversation history in local JSON files during development and Amazon S3 in AWS.
+Production-focused interface — responsive design, dark and light themes, accessible controls, suggested prompts, and Markdown responses.
+Interactive architecture viewer — lazy-loads a Mermaid diagram so visitors can inspect the AWS system without increasing the initial bundle.
+Serverless AWS deployment — uses Lambda, API Gateway, Bedrock, S3, CloudFront, IAM, and optional Route 53/ACM resources.
+Infrastructure as code — provisions repeatable environments with Terraform and isolated remote-state keys.
+
+Deploy to AWS
+The deployment script packages the Python application for Lambda, applies the Terraform configuration, exports the frontend, syncs it to S3, and reports the resulting CloudFront and API Gateway URLs.
+---
+
+jd Financial Advisor
+A production-oriented, multi-agent financial planning platform running on AWS.
+jd combines a Next.js frontend, a FastAPI backend, AWS serverless infrastructure, Aurora PostgreSQL, S3-backed vector search, Bedrock-hosted models, and a five-agent analysis workflow to produce portfolio reports, charts, and retirement projections.
+What it demonstrates
+Multi-agent orchestration with specialized planner, reporter, charting, retirement, and instrument-tagging agents
+Serverless AWS deployment with Lambda, SQS, API Gateway, CloudFront, S3, Aurora Serverless v2, SageMaker, and Bedrock
+Cost-conscious vector search using S3 Vectors and a SageMaker embedding endpoint
+Clerk authentication with per-user portfolio data separation
+Portfolio CRUD, async AI analysis jobs, markdown reports, Recharts-compatible chart data, and retirement simulations
+CloudWatch dashboards and LangFuse-compatible observability patterns
+---
+Arcade
+A SaaS-style classic arcade collection. Each game lives in its own directory with a Next.js frontend and FastAPI backend.
+
+Production can use the shared serverless API in backend/serverless. It consolidates both games behind API Gateway and Lambda with DynamoDB persistence while preserving the SQLite services used by the local launcher.
+
+Authentication uses Google Identity Services directly. See docs/google-auth-setup.md before running either game.
+
+Games in the application
+Tetris
+Playable Tetris with login, automatic score saving, player stats, and a top-ten leaderboard.
+
+Neon Shatter
+Neon brick breaker with escalating sectors, combo scoring, touch controls, accounts, and leaderboards.
+
+Tech stack: NextJS, React, TypeScript, HTML5 Canvas, FastAPI, SQLite, Google Identity
+---
 
 Positioning Statement
 I build production-minded full-stack, automation, and AI systems for scientific, enterprise, and interactive software environments - with a practical focus on reliability, usability, clean architecture, and repeatable deployment.
